@@ -1,16 +1,16 @@
-
 use std::{time::Duration, path::Path, sync::Arc};
 use futures::future::join_all;
 use serde_json::Value;
 use tauri::{regex::Regex, Window};
 use serde::{Serialize, Deserialize};
-use tokio::time::sleep;
+use tokio::{time::sleep, sync::mpsc};
 use crate::downloader::Downloader;
 use thiserror::Error;
 use anyhow::Result;
 
 const USER_AGNET: &'static str = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1";
 
+// 用户信息
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserInfo {
     pub nickname: String,
@@ -19,6 +19,7 @@ pub struct UserInfo {
     pub video_count: u16,
 }
 
+// 单个视频信息
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VideoInfoItem {
     pub video_id: String,   // 视频ID
@@ -28,6 +29,8 @@ pub struct VideoInfoItem {
    // pub music_url: String, // 视频音频URL
 }
 
+
+// 视频信息列表
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VideoInfo {
     pub max_cursor: u64,
@@ -36,6 +39,7 @@ pub struct VideoInfo {
 }
 
 
+// 用户和视频信息
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserVideoInfo {
     user_info: UserInfo,
@@ -43,6 +47,7 @@ pub struct UserVideoInfo {
 }
 
 
+// 错误定义
 #[derive(Error, Debug)]
 enum DouyinError {
     
@@ -68,11 +73,13 @@ enum DouyinError {
     UserInfoNotFoundError,
 }
 
+// 单文件下载进度条数据结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ElProgress {
     pub percentage: u8
 }
 
+// 多个文件下载进度条数据结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DouyinMuplitDownloadProgress {
     pub video_id: String,
@@ -81,6 +88,7 @@ pub struct DouyinMuplitDownloadProgress {
     pub is_success: bool,
 }
 
+// 根据视频分享链接/用户主页URL解析ID
 fn get_id_from_url(url: &mut String) -> String {
     if !url.contains("?") {
         url.push('?');
@@ -96,7 +104,7 @@ fn get_id_from_url(url: &mut String) -> String {
 }
 
 
-/// 解析视频,音频,封面URL
+/// 解析分享链接,获取用户信息和视频信息
 #[tauri::command]
 pub async fn douyin_single_search(url: String) -> Result<UserVideoInfo, String> {
 
@@ -194,13 +202,18 @@ pub async fn douyin_single_search(url: String) -> Result<UserVideoInfo, String> 
 }
 
 
+// 单个文件下载
 #[tauri::command]
 pub async fn douyin_single_download(save_path: String, video_url: String, window: Window) -> Result<String, String> {
+    
     let downloader = Downloader::new(video_url, save_path, Some(8))
         .await
         .map_err(|_|DouyinError::SystemError.to_string())?;
+
     let save_path = downloader.get_save_path();
     let downloader_clone = downloader.clone();
+    
+    // 进度条
     tokio::spawn(async move {
         let total_size = downloader_clone.total_size();
         loop {
@@ -214,6 +227,8 @@ pub async fn douyin_single_download(save_path: String, video_url: String, window
             sleep(Duration::from_millis(100)).await;
         }
     });
+
+    // 下载
     match downloader.download().await {
         Ok(_) => {
             sleep(Duration::from_millis(100)).await
@@ -259,6 +274,7 @@ async fn get_user_info(uid: &String) -> Result<UserInfo> {
     })
 }  
 
+// 获取用户视频列表
 async fn get_user_video_list(uid: String, count: u16, max_cursor: u64) -> Result<VideoInfo> {
     let api_url = format!("https://www.iesdouyin.com/web/api/v2/aweme/post/?sec_uid={uid}&count={count}&max_cursor={max_cursor}");
 
@@ -318,6 +334,7 @@ async fn get_user_video_list(uid: String, count: u16, max_cursor: u64) -> Result
 }
 
 
+// 用户主页视频搜索
 #[tauri::command]
 pub async fn douyin_muplit_search(home_url: String) -> Result<UserVideoInfo, String>  {
 
@@ -352,7 +369,7 @@ pub async fn douyin_muplit_search(home_url: String) -> Result<UserVideoInfo, Str
 }
 
 
-// 获取所有的视频信息
+// 查询用户所有视频列表, 并发送事件通知到前端页面
 #[tauri::command]
 pub async fn douyin_get_all_video_info(uid: String, video_count: u16, max_cursor: u64, window: tauri::Window) -> Result<(), String> {
  
@@ -383,59 +400,70 @@ pub async fn douyin_get_all_video_info(uid: String, video_count: u16, max_cursor
     Ok(())
 }
 
+// 拼接保存路径
 pub fn get_save_path(save_dir: &String, video_title: &String) -> String {
-
     let items: Vec<&str> = video_title.split("#").collect();
     let save_path = Path::new(&save_dir).join(&items[0].trim()).to_str().unwrap().to_string() + ".mp4"; 
-
     save_path
 }
 
+
+// 批量下载视频
 #[tauri::command]
 pub async fn douyin_muplit_download(items: Vec<VideoInfoItem>, save_dir: String, window: Window) -> Result<(), String>{
 
     let window = Arc::new(window);
     let mut handler_list = Vec::new();
+  
     for item in items.iter() {
         let video_title = Arc::new(item.video_title.clone());
-        let video_title_clone = video_title.clone();
         let save_path = Arc::new(get_save_path(&save_dir, &video_title.clone())); 
-        let save_path_clone = save_path.clone();
-        let downloader = Downloader::new(item.video_url.clone(), save_path.clone().to_string(), Some(8)).await.unwrap();
-        let downloader_clone = downloader.clone();
         let video_id = Arc::new(item.video_id.clone());
-        let video_id_clone = video_id.clone();
-        let window_progress = window.clone();
-        let window_download = window.clone();
+        let result = Downloader::new(item.video_url.clone(), save_path.clone().to_string(), Some(8)).await;
+        let window = window.clone();
+
+        if result.is_err() {
+            let _ = window.emit("douyin_muplit_download", DouyinMuplitDownloadProgress { 
+                video_id: video_id.to_string(),
+                is_success: false,
+                video_title: video_title.to_string(),
+                save_path: save_path.to_string(),
+            });
+            continue;
+        }
+
+        let downloader = result.ok().unwrap();
+
+        let (tx, mut rx) = mpsc::channel::<bool>(1);
+        
+        // 下载文件
         tokio::spawn(async move {
-            if let Err(_) = downloader.download().await {
-                let _ = window_download.emit("douyin_muplit_download", DouyinMuplitDownloadProgress { 
-                    video_id: video_id.to_string(),
-                    is_success: false,
-                    video_title: video_title.clone().to_string(),
-                    save_path: save_path.clone().to_string(),
-                });
-            }
-            
+            let is_success = match downloader.download().await {
+                Ok(_) => true,
+                Err(_) => false,
+            };
+            let _ = tx.send(is_success).await; // 下载是否成功
         });
+        
+        // 监听下载进度
         let handler = tokio::spawn(async move {
-            let filesize = downloader_clone.total_size();
             loop {
-                let download_size = downloader_clone.downloaded_size().await;
-                if download_size >= filesize {
-                    let _ = window_progress.emit("douyin_muplit_download", DouyinMuplitDownloadProgress { 
-                        video_id: video_id_clone.to_string(), 
-                        is_success: true,
-                        video_title: video_title_clone.clone().to_string(),
-                        save_path: save_path_clone.to_string()
-                    });
-                    break;
+                tokio::select! {
+                    val = rx.recv() => {
+                        let _ = window.emit("douyin_muplit_download", DouyinMuplitDownloadProgress { 
+                            video_id: video_id.to_string(),
+                            is_success: val.unwrap(),
+                            video_title: video_title.clone().to_string(),
+                            save_path: save_path.clone().to_string(),
+                        });
+                        break;
+                    }
+                    _ = sleep(Duration::from_secs(1)) => {}
                 }
-                sleep(Duration::from_secs(1)).await;
             }
         });
         handler_list.push(handler);
     }
-    join_all(handler_list).await;
+    join_all(handler_list).await; // 等待监听下载任务完成
     Ok(())
 }

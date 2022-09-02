@@ -14,10 +14,10 @@ type UserInfo = {
 }
 
 type VideoInfoItem = {
-  video_id: string,   // 视频ID
-  video_title: string, // 视频标题
-  video_url: string,  // 视频链接
-  cover_url: string, // 视频封面URL
+  video_id: string,   
+  video_title: string, 
+  video_url: string,  
+  cover_url: string, 
 }
 
 type VideoInfo = {
@@ -154,7 +154,7 @@ const downlad = async (items: any, save_dir: string) => {
       let result: DownloadNotifyData = data.payload
       for (let i = 0; i < tableData.value.length; i++) {
         if (tableData.value[i].video_id === result.video_id) {
-            tableData.value[i].is_success = true;
+            tableData.value[i].is_success = result.is_success;
             tableData.value[i].save_path = result.save_path;
         }
       }

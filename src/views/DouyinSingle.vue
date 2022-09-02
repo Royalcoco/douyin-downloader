@@ -13,11 +13,10 @@ type UserInfo = {
     video_count: number,
 }
 type VideoInfoItem = {
-  video_id: string,   // 视频ID
-  video_title: string, // 视频标题
-  video_url: string,  // 视频链接
-  cover_url: string, // 视频封面URL
-  //music_url: string, // 视频音频URL
+  video_id: string,   
+  video_title: string, 
+  video_url: string,  
+  cover_url: string, 
 }
 
 type VideoInfo = {

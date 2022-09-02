@@ -1,6 +1,7 @@
 use std::{sync::Arc, fs};
 use futures::future::join_all;
 use reqwest::Client;
+use thiserror::Error;
 use tokio::sync::RwLock;
 use anyhow::Result;
 use log::error;
@@ -8,6 +9,11 @@ use std::path::Path;
 
 const USER_AGNET: &'static str = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1";
 
+#[derive(Error, Debug)]
+pub enum DownloadError {
+    #[error("获取文件信息失败")]
+    GetFileInfoError,
+}
 
 #[derive(Debug, Clone)]
 pub struct Downloader {
@@ -104,7 +110,11 @@ impl Downloader {
             .to_string()
         );
 
-        let filesize = Arc::new(response.content_length().unwrap());
+        let filesize = Arc::new(match response.content_length() {
+            Some(r) => r,
+            None => return Err(DownloadError::GetFileInfoError.into()),
+        });
+
         let chunk_count = Arc::new(match chunk_count {
             Some(c) => c,
             None => 4,
@@ -146,8 +156,8 @@ impl Downloader {
     fn is_support_range(&self) -> bool {
         *self.support_range
     }
-
-
+    
+    // 普通下载
     async fn plain_download(&self) -> Result<bool> {
         let client = Client::builder()
             .user_agent(USER_AGNET)
@@ -170,6 +180,7 @@ impl Downloader {
         Ok(true)
     }
 
+    // 分片下载
     async fn chunk_download(self: Arc<Self>, range: (u64, u64)) -> Result<bool> {
         let client = Client::builder()
             .user_agent(USER_AGNET)
@@ -194,6 +205,7 @@ impl Downloader {
         Ok(true)
     }
 
+    // 下载功能入口
     pub async fn download(self: Arc<Self>) -> Result<bool> {
 
         if self.total_size() < 1 {
