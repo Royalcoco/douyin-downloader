@@ -3,8 +3,10 @@
   windows_subsystem = "windows"
 )]
 
-pub mod downloader;
+mod downloader;
 mod douyin;
+mod common;
+
 
 fn main() {
   tauri::Builder::default()

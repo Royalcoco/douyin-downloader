@@ -5,41 +5,20 @@ import { appWindow } from '@tauri-apps/api/window'
 
 import { LinkOutlined, SearchOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons-vue'
 import { ElMessage } from 'element-plus'
+import { UserVideoInfo } from '../types/douyin'
 
-type UserInfo = {
-    nickname: string,
-    uid: string,
-    avatar_url: string,
-    video_count: number,
-}
-type VideoInfoItem = {
-  video_id: string,   
-  video_title: string, 
-  video_url: string,  
-  cover_url: string, 
-}
-
-type VideoInfo = {
-  max_cursor: number,
-  has_more: boolean,
-  items: VideoInfoItem[],
-}
-  
-type UserVideoInfo = {
-    user_info: UserInfo,
-    video_info: VideoInfo,
-}
-
-const save_path = ref()
-const videoTable = ref(Array())
+const save_path = ref()  // 文件保存路径
+const videoTable = ref(Array()) // 表格数据
+// 搜索表单
 const form = reactive({
   share_url: 'https://v.douyin.com/jpL1UwY/',
 })
-const percentage = ref(0)
-const isDownloading = ref(false)
-const isSearching = ref(false)
-const isDownloadSuccess = ref(false);
+const percentage = ref(0) // 进度条百分比
+const isDownloading = ref(false) // 是否下载中
+const isSearching = ref(false)  // 是否搜索中
+const isDownloadSuccess = ref(false); // 是否下载成功
 
+// 下载
 const onDownload = async (index: number) => {
     const unlisten = appWindow.listen('douyin_single_download', (data: any) => {
         percentage.value = data.payload.percentage
@@ -53,7 +32,7 @@ const onDownload = async (index: number) => {
       }
       isDownloading.value = true
       const info = videoTable.value[index]
-      save_path.value = save_dir + "/" + info.video_title + ".mp4"
+      save_path.value = save_dir + "/" + info.video_title
       save_path.value = await invoke("douyin_single_download", { savePath: save_path.value, videoUrl: info.video_url})
       percentage.value = 0
       isDownloadSuccess.value = true
@@ -66,6 +45,7 @@ const onDownload = async (index: number) => {
     }
 }
 
+// 搜索
 const onSearch = async () => { 
   isSearching.value = true;
   try {
@@ -82,7 +62,6 @@ const onSearch = async () => {
         video_title: info.video_info.items[0].video_title,
         cover_url : info.video_info.items[0].cover_url,
         video_url: info.video_info.items[0].video_url
-        //music_url : info.video_list[0].music_url,
       })
     }else{
       ElMessage.info("未找到相关视频")
@@ -95,15 +74,16 @@ const onSearch = async () => {
   }
 }
 
+// 打开已下载视频
 const onOpen = async () => {
   await shell.open(save_path.value)
 }
 
+// 浏览器中预览视频
 const onPreview = async (index: number) => {
   const data = videoTable.value[index]
-  shell.open(data.video_info.video_url)
+  shell.open(data.video_url)
 }
-
 
 </script>
 

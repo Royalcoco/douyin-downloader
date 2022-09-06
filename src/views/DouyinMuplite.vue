@@ -5,48 +5,27 @@ import { LinkOutlined, SearchOutlined, EyeOutlined, DownloadOutlined, ClearOutli
 import { ElMessage, ElTable } from 'element-plus'
 import { appWindow } from '@tauri-apps/api/window'
 import { round } from 'lodash'
+import { UserVideoInfo, VideoInfo } from '../types/douyin'
 
-type UserInfo = {
-    nickname: string,
-    uid: string,
-    avatar_url: string,
-    video_count: number,
-}
 
-type VideoInfoItem = {
-  video_id: string,   
-  video_title: string, 
-  video_url: string,  
-  cover_url: string, 
-}
+const tableData = ref(Array())  // 表格数据
+const tableRef = ref<InstanceType<typeof ElTable>>() // 表格引用
+const selectedList = ref(Array())  // 选中列表
+const isSearching = ref(false)  // 是否搜索中
+const isDownloading = ref(false); // 是否下载中
 
-type VideoInfo = {
-  max_cursor: number,
-  has_more: boolean,
-  items: VideoInfoItem[],
-}
-
-const total_count = ref(0)
-const finish_count = ref(0)
-const percentage = ref(0)
-
-type UserVideoInfo = {
-    user_info: UserInfo,
-    video_info: VideoInfo,
-}
-const isSearching = ref(false)
-const tableData = ref(Array())
-const selectedList = ref(Array())
-const tableRef = ref<InstanceType<typeof ElTable>>()
-const downloaded_count = ref(0)
-
+// 搜索表单
 const form = reactive({
   home_url: 'https://v.douyin.com/j3XPKMg/',
 })
 
-const isDownloading = ref(false);
+const total_count = ref(0)   // 下载文件总数
+const finish_count = ref(0) //  已下载文件总数
+const percentage = ref(0)  // 进度条百分比
 
 const onSearch = async () => {
+
+  // 监听搜索事件, 将数据插入表格末尾
   const unlisten = appWindow.listen('douyin_get_all_video_info', (data: any) => {
       let video_info: VideoInfo = data.payload
       for (let i = 0; i < video_info.items.length; i++) {
@@ -56,6 +35,7 @@ const onSearch = async () => {
         ElMessage.success(`搜索完成, 共找到${tableData.value.length}个视频.`)
       }
   })
+
   try {
     isSearching.value = true
     const data: UserVideoInfo = await invoke('douyin_muplit_search', { homeUrl: form.home_url})
@@ -82,6 +62,7 @@ const onClear = () => {
   selectedList.value = []
 }
 
+// 下载单个视频
 const onDownloadItem = async (index: number) => {
     try{
       const save_dir = (await dialog.open({ directory: true}))
@@ -104,6 +85,7 @@ const onDownloadItem = async (index: number) => {
     }
 }
 
+// 下载选中的视频列表
 const onDownloadSelected = async () => {
   try {
     const save_dir = (await dialog.open({ directory: true}))
@@ -123,6 +105,7 @@ const onDownloadSelected = async () => {
   }
 }
 
+// 下载表格中已搜索出来的所有视频
 const onDownloadAll = async () => { 
   try {
     const save_dir = (await dialog.open({ directory: true}))
@@ -178,11 +161,13 @@ const downlad = async (items: any, save_dir: string) => {
   }
 }
 
+// 在浏览器中预览
 const onPreview = async (index: number) => {
   const data = tableData.value[index]
   shell.open(data.video_url)
 }
 
+// 打开已下载的视频
 const onOpen = async (index: number) => {
   const data = tableData.value[index]
   shell.open(data.save_path)

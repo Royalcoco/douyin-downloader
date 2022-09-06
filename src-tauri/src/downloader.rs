@@ -1,4 +1,4 @@
-use std::{sync::Arc, fs};
+use std::sync::Arc;
 use futures::future::join_all;
 use reqwest::Client;
 use thiserror::Error;
@@ -6,8 +6,7 @@ use tokio::sync::RwLock;
 use anyhow::Result;
 use log::error;
 use std::path::Path;
-
-const USER_AGNET: &'static str = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1";
+use crate::common::USER_AGNET;
 
 #[derive(Error, Debug)]
 pub enum DownloadError {
@@ -25,8 +24,9 @@ pub struct Downloader {
     rw_lock: Arc<RwLock<u64>>,
 }
 
-#[cfg(any(windows))]
+#[cfg(target_family="windows")]
 async fn write_bytes_to_file(filepath: &str, bytes: &[u8], offset: u64) -> Result<usize, std::io::Error> {
+    use std::fs;
     use std::os::windows::fs::FileExt;
     let file = fs::OpenOptions::new()
                 .create(true)
@@ -35,29 +35,17 @@ async fn write_bytes_to_file(filepath: &str, bytes: &[u8], offset: u64) -> Resul
     file.seek_write(&bytes, offset)
 }
 
-#[cfg(any(unix))]
+#[cfg(target_family="unix")]
 async fn write_bytes_to_file(filepath: &str, bytes: &[u8], offset: u64) -> Result<usize, std::io::Error> {
+    use std::fs;
     use std::os::unix::fs::FileExt;
     let file = fs::OpenOptions::new()
                 .create(true)
                 .write(true)
                 .open(filepath)?;
-    file.write_at(&bytes, offset)
+    file.write_at(bytes, offset)
 }
 
-#[cfg(any(linux))]
-async fn write_bytes_to_file(filepath: &str, bytes: &[u8], offset: u64) -> Result<usize, std::io::Error> {
-    tokio_uring::start(async {
-        let file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .open("filepath")
-            .await?;
-        let (res, _) = file.write_at(bytes. offset).await;
-        let n = res?;
-        file.close().await?;
-    })
-}
 
 
 impl Downloader {
@@ -115,15 +103,9 @@ impl Downloader {
             None => return Err(DownloadError::GetFileInfoError.into()),
         });
 
-        let chunk_count = Arc::new(match chunk_count {
-            Some(c) => c,
-            None => 4,
-        });
+        let chunk_count = Arc::new(chunk_count.unwrap_or(4));
 
-        let support_range = Arc::new(match response.headers().get("Accept-Ranges") {
-            Some(_) => true,
-            None => false,
-        });
+        let support_range = Arc::new(response.headers().get("Accept-Ranges").is_some());
 
         let rw_lock = Arc::new(RwLock::<u64>::new(0));
         

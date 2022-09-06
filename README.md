@@ -25,7 +25,13 @@
 - 通过异步运行时tokio开启多个协程, 分别下载视频文件的分片(http range)。
 
 
+## 开发
+- 安装依赖: npm i
+- 运行项目: npm run tauri dev
 
+## 安装
+
+[Releases](https://github.com/ClassmateLin/video-downloader/releases)页面下载对应的安装包。
 
 ## 功能
 
@@ -39,7 +45,11 @@
 
 #### 用户主页视频批量下载
 
-- 通过用户主页链接搜索用户视频进行下载。 例如:  https://v.douyin.com/j3XPKMg/, https://www.douyin.com/user/MS4wLjABAAAAWiOs23d6NtmiUg98zONd6wQhmPsy1WLwZn0jEaCbDL8
+- 通过用户主页链接搜索用户视频进行下载, 支持下载单个/选中/全部/视频。
+例如:  
+- 抖音手机进入用户个人主页, 点击分享用户, 可获得链接, 如: ```https://v.douyin.com/j3XPKMg/ ```
+
+- 抖音网页版进入用户个人主页, 复制浏览器地址栏内容, 如: ```https://www.douyin.com/user/MS4wLjABAAAAWiOs23d6NtmiUg98zONd6wQhmPsy1WLwZn0jEaCbDL8```
 
 ![用户主页视频下载](./docs/imgs/douyin_muplit_download.png)
 
