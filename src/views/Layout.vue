@@ -7,7 +7,7 @@
       <el-header align="center"></el-header>
       <el-container>
         <el-aside width="auto">
-            <Menu></Menu>
+            <menu-bar></menu-bar>
         </el-aside>
         <el-container>
           <el-main height="80%">

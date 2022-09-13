@@ -28,12 +28,6 @@
 <script lang="ts" setup>
 import { DownCircleOutlined } from '@ant-design/icons-vue';
 import { ref } from 'vue'
-import {
-  Document,
-  Menu as IconMenu,
-  Download,
-  Setting,
-} from '@element-plus/icons-vue'
 
 const isCollapse = ref(true)
 const handleOpen = (key: string, keyPath: string[]) => {

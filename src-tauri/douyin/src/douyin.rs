@@ -4,10 +4,11 @@ use serde_json::Value;
 use tauri::{regex::Regex, Window};
 use serde::{Serialize, Deserialize};
 use tokio::{time::sleep, sync::mpsc};
-use crate::downloader::Downloader;
+use downloader::Downloader;
 use thiserror::Error;
 use anyhow::Result;
-use crate::common::USER_AGNET;
+
+const USER_AGNET: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1";
 
 // 用户信息
 #[derive(Debug, Serialize, Deserialize)]

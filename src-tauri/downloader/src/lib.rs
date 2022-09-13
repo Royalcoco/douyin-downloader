@@ -6,7 +6,9 @@ use tokio::sync::RwLock;
 use anyhow::Result;
 use log::error;
 use std::path::Path;
-use crate::common::USER_AGNET;
+
+const USER_AGNET: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1";
+
 
 #[derive(Error, Debug)]
 pub enum DownloadError {
