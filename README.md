@@ -64,11 +64,6 @@ $ npm install
 - [x] Download/preview a single video in a table.
 
 
-### Bilibili
-
-- [ ] General content download (Web|TV|App)
-
-
 ## Screenshot
 
 ![index](./docs/imgs/index.png)

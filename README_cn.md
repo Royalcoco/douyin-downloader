@@ -60,10 +60,6 @@ $ npm install
 - [x] 下载/预览表格中某个视频。
 
 
-### Bilibili
-
-- [ ] 普通内容下载(Web|TV|App)
-
 
 ## 截图
 

@@ -13,14 +13,6 @@
             <el-menu-item index="/douyin/single">分享链接下载</el-menu-item>
             <el-menu-item index="/douyin/muplite">用户主页下载</el-menu-item>      
     </el-sub-menu>
-
-    <el-sub-menu index="2">
-            <template #title>
-            <el-icon class="ali-icon-bilibili"></el-icon>
-            <span>B站</span>
-            </template>
-    </el-sub-menu>
-
   </el-menu>
 
 </template>

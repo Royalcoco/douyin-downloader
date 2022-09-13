@@ -14,7 +14,7 @@ const onClick = () => {
                <el-button @click="onClick"><el-icon class="ali-icon-shipinxiazai"></el-icon>Video downloader</el-button>
             </el-row>
             <el-row>
-                <p>基于rust+tauri开发的一款视频下载器, 支持多个第三方平台视频下载。</p>
+                <p>基于rust+tauri开发的一款抖音视频下载器, 支持批量下载无水印视频。</p>
             </el-row>
         </el-col>
     </div>
