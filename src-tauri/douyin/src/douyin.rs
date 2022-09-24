@@ -108,16 +108,21 @@ fn get_id_from_url(url: &mut String) -> String {
 }
 
 
+
 /// 解析分享链接,获取用户信息和视频信息
 #[tauri::command]
-pub async fn douyin_single_search(url: String) -> Result<UserVideoInfo, String> {
-
+pub async fn douyin_single_search(content: String) -> Result<UserVideoInfo, String> {
+    let regex = Regex::new(r"(?P<url>https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|])").map_err(|_|DyError::SystemAbnormal.to_string())?;
+    let url = match regex.captures(&content) {
+        Some(cap) => cap.name("url").unwrap().as_str(),
+        None => "",
+    };
     let client = reqwest::Client::builder()
         .user_agent(USER_AGNET)
         .build()
         .map_err(|_|{DyError::SystemAbnormal.to_string()})?;
 
-    let mut real_url = client.get(&url)
+    let mut real_url = client.get(url)
         .send()
         .await
         .map_err(|_| DyError::RequestFailed.to_string())?
@@ -338,14 +343,20 @@ async fn get_user_video_list(uid: String, count: u16, max_cursor: u64) -> Result
 
 // 用户主页视频搜索
 #[tauri::command]
-pub async fn douyin_muplit_search(home_url: String) -> Result<UserVideoInfo, String>  {
+pub async fn douyin_muplit_search(content: String) -> Result<UserVideoInfo, String>  {
+
+    let regex = Regex::new(r"(?P<url>https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|])").map_err(|_|DyError::SystemAbnormal.to_string())?;
+    let home_url = match regex.captures(&content) {
+        Some(cap) => cap.name("url").unwrap().as_str(),
+        None => "",
+    };
 
     let client = reqwest::Client::builder()
         .user_agent(USER_AGNET)
         .build()
         .map_err(|_|{ DyError::SystemAbnormal.to_string()})?;
     
-    let mut real_url = client.get(&home_url)
+    let mut real_url = client.get(home_url)
         .send()
         .await
         .map_err(|_| DyError::RequestFailed.to_string())?

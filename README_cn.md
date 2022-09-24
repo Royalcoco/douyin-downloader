@@ -20,7 +20,7 @@
 
 ## 安装
 
-- [Release](https://github.com/ClassmateLin/video-downloader/releases)页面下载对应的安装包，当然也可以自行编译，支持Windows x64, Linux x86_64 and macOS 11+。
+- [Release](https://github.com/ClassmateLin/douyin-downloader/releases)页面下载对应的安装包，当然也可以自行编译，支持Windows x64, Linux x86_64 and macOS 11+。
 
 
 
@@ -31,7 +31,7 @@
 - 拉取代码并安装依赖:
 
 ```
-$ git clone https://github.com/ClassmateLin/video-downloader.git && cd video-downloader
+$ git clone https://github.com/ClassmateLin/douyin-downloader.git && cd douyin-downloader
 $ npm install
 ```
 
@@ -48,13 +48,13 @@ $ npm install
 
 #### 单个视频下载
 
-- [x] 通过分享链接搜索视频. 例如: `https://v.douyin.com/jpL1UwY/`
+- [x] 通过分享链接搜索视频. 例如: `https://v.douyin.com/jpL1UwY/` 或者 `5.30 WZZ:/ 复制打开抖音，看看【选书人的作品】# 人生感悟 # 哲理人生 # 书单 # 智慧人生 @抖音... https://v.douyin.com/643hUux/`
 - [x] 预览搜索出来的视频。
 - [x] 下载搜索出来的视频。
 
 #### 多个视频下载
 
-- [x] 通过用户主页链接搜索所有视频. eg: `https://v.douyin.com/j3XPKMg/`
+- [x] 通过用户主页链接搜索所有视频. eg: `https://v.douyin.com/j3XPKMg/` 或者 `8- 长按复制此条消息，打开抖音搜索，查看TA的更多作品。 https://v.douyin.com/64w7StG/`
 - [x] 批量下载全部视频。
 - [x] 批量下载选中视频。
 - [x] 下载/预览表格中某个视频。

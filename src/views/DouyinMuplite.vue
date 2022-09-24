@@ -38,7 +38,7 @@ const onSearch = async () => {
 
   try {
     isSearching.value = true
-    const data: UserVideoInfo = await invoke('douyin_muplit_search', { homeUrl: form.home_url})
+    const data: UserVideoInfo = await invoke('douyin_muplit_search', { content: form.home_url})
     tableData.value = data.video_info.items
     await invoke('douyin_get_all_video_info', {
        uid: data.user_info.uid, 

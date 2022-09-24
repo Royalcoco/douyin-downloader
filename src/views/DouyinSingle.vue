@@ -11,7 +11,7 @@ const save_path = ref()  // 文件保存路径
 const videoTable = ref(Array()) // 表格数据
 // 搜索表单
 const form = reactive({
-  share_url: 'https://v.douyin.com/jpL1UwY/',
+  share_content: 'https://v.douyin.com/jpL1UwY/',
 })
 const percentage = ref(0) // 进度条百分比
 const isDownloading = ref(false) // 是否下载中
@@ -50,7 +50,7 @@ const onSearch = async () => {
   isSearching.value = true;
   try {
     videoTable.value.length = 0
-    const info: UserVideoInfo = await invoke("douyin_single_search", { url: form.share_url })
+    const info: UserVideoInfo = await invoke("douyin_single_search", { content: form.share_content })
     if (info.video_info.items.length > 0) {
       videoTable.value.length = 0
       videoTable.value.push({
@@ -99,7 +99,7 @@ const onPreview = async (index: number) => {
     
     <el-form-item label="视频分享链接">
       <el-input
-        v-model="form.share_url"
+        v-model="form.share_content"
         class="video-search-input"
         autosize
         placeholder="https://v.douyin.com/23FsM5g/"
