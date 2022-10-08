@@ -11,9 +11,9 @@
 </h3>
 <div align="center">
 
-[![Windows Support](https://img.shields.io/badge/Windows-0078D6?style=flat&logo=windows&logoColor=white)](https://github.com/lzdyes/douyin-downloader/releases)
-[![MacOS Support](https://img.shields.io/badge/MACOS-adb8c5?style=flat&logo=macos&logoColor=white)](https://github.com/lzdyes/douyin-downloader/releases)
-[![Linux Support](https://img.shields.io/badge/linux-1793D1?style=flat&logo=linux&logoColor=white)](https://github.com/lzdyes/douyin-downloader/releases)
+[![Windows Support](https://img.shields.io/badge/Windows-0078D6?style=flat&logo=windows&logoColor=white)](https://github.com/ClassmateLin/douyin-downloader/releases)
+[![MacOS Support](https://img.shields.io/badge/MACOS-adb8c5?style=flat&logo=macos&logoColor=white)](https://github.com/ClassmateLin/douyin-downloader/releases)
+[![Linux Support](https://img.shields.io/badge/linux-1793D1?style=flat&logo=linux&logoColor=white)](https://github.com/ClassmateLin/douyin-downloader/releases)
 
 </div>
 
