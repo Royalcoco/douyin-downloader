@@ -296,6 +296,7 @@ async fn get_user_video_list(uid: String, count: u16, max_cursor: u64) -> Result
 
     let max_cursor = data["max_cursor"].as_u64().unwrap_or(0);
     let has_more = data["has_more"].as_bool().unwrap_or(false);
+    let replace_regex = Regex::new(r#"[\\n/\*"<>|]"#).map_err(|_|DyError::SystemAbnormal.to_string()).unwrap();
 
     if !data["aweme_list"].is_array() || data["aweme_list"].as_array().unwrap_or(&Vec::<Value>::new()).is_empty() {
         return Ok(VideoInfo {
@@ -311,7 +312,7 @@ async fn get_user_video_list(uid: String, count: u16, max_cursor: u64) -> Result
         .iter()
         .map(|item| {
             let video_id = item["aweme_id"].to_string().replace('"', "");
-            let mut video_title = item["desc"]
+            let video_title = item["desc"]
                 .to_string()
                 .replace('"', "")
                 .split('#')
@@ -320,6 +321,7 @@ async fn get_user_video_list(uid: String, count: u16, max_cursor: u64) -> Result
                 .split('@')
                 .collect::<Vec<&str>>()[0]
                 .to_string();
+            let mut video_title = replace_regex.replace_all(&video_title , "").to_string();
             if video_title.is_empty() {
                 video_title = format!("无标题{}", video_id);
             }

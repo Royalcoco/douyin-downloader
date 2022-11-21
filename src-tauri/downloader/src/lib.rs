@@ -204,8 +204,11 @@ impl Downloader {
         let mut start = 0;
         let mut end = 0;
 
-        while end <= self.total_size() {
+        while end < self.total_size() {
             end += chunk_size;
+            if end > self.total_size() {
+                end = self.total_size();
+            }
             range_list.push((start, end));
             start = end + 1;
         }
